@@ -1,10 +1,14 @@
-import { Actor, CollisionType, Color, Engine, vec, Text, Font } from "excalibur"
+import { Actor, CollisionType, Color, Engine, vec, Font, Label, FontUnit, Sound, Loader } from "excalibur"
 
 // 1 - Criar uma instancia de Engine, que representa o jogo
 const game = new Engine({
 	width: 800,
 	height: 600
 })
+
+const sound = new Sound('./som/pontos.mp3');
+const loader = new Loader([sound]);
+await game.start(loader);
 
 // 2 - Criar barra do player
 const barra = new Actor({
@@ -41,7 +45,7 @@ const bolinha = new Actor({
 bolinha.body.collisionType = CollisionType.Passive
 
 // 5 - Criar movimentação da bolinha
-const velocidadeBolinha = vec(1000, 1000)
+const velocidadeBolinha = vec(1100, 1100)
 
 
 // Após 1 segundo (1000 ms), define a velocidade da bolinha em x = 100 e y = 100
@@ -125,24 +129,38 @@ listaBlocos.forEach(bloco => {
 })
 
 // Adicionando pontuação
-
 let pontos = 0
 
-const textoPontos = new Text({
-	text: "OPAA BAOO",
-	font: new Font ({ size: 20})
+const textoPontos = new Label({
+	text: pontos.toString(),
+	font: new Font({
+		size: 40,
+		color: Color.White,
+		strokeColor: Color.Black,
+		unit: FontUnit.Px //Espeficar unidades de medidas 
+	}),
+	pos: vec(600, 500)
 })
 
-const objetoTexto = new Actor({
-	x: game.drawWidth - 80,
-	y: game.drawHeight - 15
-})
+game.add(textoPontos)
 
-objetoTexto.graphics.use(textoPontos)
+// Label = Text + Actor 
+// const textoPontos = new Text({
+// 	text: "OPAA BAOO",
+// 	font: new Font ({ size: 20})
+// })
 
-game.add(objetoTexto)
+// const objetoTexto = new Actor({
+// 	x: game.drawWidth - 80,
+// 	y: game.drawHeight - 15
+// })
+
+// objetoTexto.graphics.use(textoPontos)
+
+// game.add(objetoTexto)
 
 let colidindo: boolean = false
+
 
 bolinha.on("collisionstart", (event) => {
 	//Verificar se a bolinha colidiu com algum bloco destrutivel
@@ -151,6 +169,13 @@ bolinha.on("collisionstart", (event) => {
 	if (listaBlocos.includes(event.other)) {
 		//Destruir o bloco colidido
 		event.other.kill()
+		sound.play(0.5);
+
+		//Adiciona um ponto na pontuação
+		pontos++
+
+		//Atualizando valor do placar - textoPontos
+		textoPontos.text = pontos.toString()
 
 	}
 
@@ -180,6 +205,7 @@ bolinha.on("exitviewport", () => {
 	alert("FIM DE JOGO")
 	window.location.reload()
 })
+
 
 // Para iniciar o game/jogo
 game.start()
