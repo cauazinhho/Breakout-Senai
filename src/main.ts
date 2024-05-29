@@ -6,9 +6,6 @@ const game = new Engine({
 	height: 600
 })
 
-const sound = new Sound('./som/pontos.mp3');
-const loader = new Loader([sound]);
-await game.start(loader);
 
 // 2 - Criar barra do player
 const barra = new Actor({
@@ -44,9 +41,29 @@ const bolinha = new Actor({
 
 bolinha.body.collisionType = CollisionType.Passive
 
-// 5 - Criar movimentação da bolinha
-const velocidadeBolinha = vec(1100, 1100)
+let coresBolinha = [
+	Color.Black, 
+	Color.Chartreuse, 
+	Color.Cyan,
+	Color.Green,
+	Color.Orange,
+	Color.Magenta,
+	Color.Yellow,
+	Color.Rose,
+	Color.White,
+	Color.Red
 
+]
+
+let numeroCores = coresBolinha.length
+
+// 5 - Criar movimentação da bolinha
+const velocidadeBolinha = vec(1000, 1000)
+
+const sound = new Sound('./som/pontos.mp3');
+const gameOverSound = new Sound('./som/acabou.mp3')
+const loader = new Loader([sound, gameOverSound]);
+await game.start(loader);
 
 // Após 1 segundo (1000 ms), define a velocidade da bolinha em x = 100 e y = 100
 setTimeout(() => {
@@ -159,6 +176,7 @@ game.add(textoPontos)
 
 // game.add(objetoTexto)
 
+
 let colidindo: boolean = false
 
 
@@ -169,13 +187,31 @@ bolinha.on("collisionstart", (event) => {
 	if (listaBlocos.includes(event.other)) {
 		//Destruir o bloco colidido
 		event.other.kill()
+
 		sound.play(0.5);
 
 		//Adiciona um ponto na pontuação
 		pontos++
 
+		//Mudar cor da bolinha
+		bolinha.color = coresBolinha [Math.trunc(Math.random() * numeroCores)]
+		// Math.random -> 0 - 1 * numeroCores -> 10
+
+
+		bolinha.color = event.other.color
+		
+		
+		// Math.trunc() -> retorna somente a porção inteira de um numero
+		
 		//Atualizando valor do placar - textoPontos
 		textoPontos.text = pontos.toString()
+		
+		//Se acabar os blocos mostrar mensagem de vitória
+		if (pontos == 15) {
+			alert("VOCÊ GANHOU!!!")
+
+			window.location.reload()
+		}
 
 	}
 
@@ -202,8 +238,14 @@ bolinha.on("collisionend", () => {
 })
 
 bolinha.on("exitviewport", () => {
-	alert("FIM DE JOGO")
-	window.location.reload()
+
+	gameOverSound.play(1)
+	.then(() => {
+		alert("FIM DE JOGO")
+		window.location.reload()
+
+	})
+
 })
 
 
